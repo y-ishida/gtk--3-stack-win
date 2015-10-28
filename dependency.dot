@@ -1,0 +1,28 @@
+digraph dpendency {
+	Gtk -> GLib;
+	Gtk -> Atk;
+	Gtk -> GdkPixbuf;
+	Gtk -> libepoxy;
+	Gtk -> Pango;
+	Gtk -> hicolor_icon_theme;
+
+	GLib -> gettext;
+	GLib -> libffi;
+	GLib -> zlib;
+
+	GdkPixbuf -> zlib;
+	GdkPixbuf -> libpng;
+
+	Pango -> fontconfig;
+	Pango -> Cairo;
+
+	fontconfig -> freetype2;
+	fontconfig -> libxml2;
+
+	gettext -> libiconv;
+
+	Cairo -> zlib;
+	Cairo -> libpng;
+	Cairo -> pixman;
+}
+
