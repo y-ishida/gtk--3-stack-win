@@ -1,17 +1,13 @@
-gtk+-3-stack-win
-=================
+# gtk+-3-stack-win
 
-This is Win32 dynamic link library (DLL) stack of gtk+3 for cross compiling on Linux.
-This is contained some shell scripts that is rannable on Linux.
-
+This is set of shell scripts to build a Windows dynamic link libraries (DLL) stack of gtk+3 for cross compiling on Linux.
 Builded artifacts are used for cross compiling application that based on gtk+3 and running on a Windows OS.
 
 
 
-Environment for building
--------------------------
+## Environment for building
 
-Requires to install packages at host environment (Linux).
+Requires to install following packages at host environment (Linux).
 
 * i686-w64-mingw32
 
@@ -25,36 +21,37 @@ Requires to install packages at host environment (Linux).
 
 
 
-Usage
-------
+## Usage
 
 under constructing ...
 
 
 
-Notes
-------
+## Notes
 
-Librarys dependencies visualization
-....................................
+### Librarys dependencies visualization
 
 If you want to see a visual dependency relation graph, need to install graphviz.
 
 For exampele if you can use apt (ex; ubuntu) ;
 
+```sh
 > sudo apt-get install graphviz
+```
 
 So you have installed, can generate the image file;
 
+```sh
 > dot -Tpng dependency.dot -o dependency.png
+```
 
 If you use Ubuntu, you can view the image file by 'eog';
 
+```sh
 > eog dependency.png
+```
 
-
-Workaround of libtool's bug
-............................
+### Workaround of libtool's bug
 
 The gcc's flag '-static-libgcc' is ignored in building a DLL ( or may be a shared library too ),
 even though it set the flag to LDFLAGS.
@@ -65,8 +62,7 @@ So in these build-*.sh set the above flag to variable CC at configure options as
 instead of setting into the LDFLAGS.
 
 
-Not included optional librarys
-...............................
+### Not included optional librarys
 
 If you want to use JPEG or TIFF image file,
 you must change these shell script to build and link following libraries.
