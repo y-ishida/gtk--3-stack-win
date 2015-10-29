@@ -50,12 +50,13 @@ build_list="
 	./build-pango.sh
 	./build-libepoxy.sh
 	./build-hicolor-icon-theme.sh
+	./build-adwaita-icon-theme.sh
 	./build-gtk.sh
 	./build-gee.sh
 "
 
 # for testing
-build_list=./build-pixman.sh
+#build_list=./build-adwaita-icon-theme.sh
 
 libname=
 filename=
