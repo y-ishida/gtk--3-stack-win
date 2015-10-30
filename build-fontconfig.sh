@@ -3,6 +3,6 @@ filename=${libname}.tar.bz2
 url=http://www.freedesktop.org/software/fontconfig/release/${filename}
 
 configure() {
-	./configure ${configure_flags} --enable-libxml2
+	./configure ${configure_flags} --disable-docs --enable-libxml2
 }
 
