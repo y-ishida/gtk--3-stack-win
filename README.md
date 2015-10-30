@@ -7,7 +7,9 @@ Builded artifacts are used for cross compiling application that based on gtk+3 a
 
 ## Environment for building
 
-Requires to install following packages at host environment (Linux).
+Requires connecting internet to download source codes.
+
+And requires to install following packages at host environment (Linux).
 
 * i686-w64-mingw32
 
@@ -58,7 +60,7 @@ even though it set the flag to LDFLAGS.
 
 It seems a long standig bug; https://www.cygwin.com/ml/cygwin/2009-02/msg00231.html
 
-So in these build-*.sh set the above flag to variable CC at configure options as a workaround of the bug,
+So in these ``build-*.sh`` set the above flag to variable CC at configure options as a workaround of the bug,
 instead of setting into the LDFLAGS.
 
 
