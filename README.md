@@ -1,4 +1,4 @@
-# gtk+-3-stack-win
+# gtk-3-stack-win
 
 This is set of shell scripts to build a Windows dynamic link libraries (DLL) stack of gtk+3 for cross compiling on Linux.
 Builded artifacts are used for cross compiling application that based on gtk+3 and running on a Windows OS.
