@@ -52,11 +52,26 @@ build_list="
 	./build-hicolor-icon-theme.sh
 	./build-adwaita-icon-theme.sh
 	./build-gtk.sh
+	./build-libsoup.sh
 	./build-gee.sh
 "
 
+
+glib_networking_depends="
+	./build-gmp.sh
+	./build-nettle.sh
+	./build-gnutls.sh
+"
+
+libsoup_depends="
+	./build-glib-networking.sh
+	./build-sqlite3.sh
+"
+
 # for testing
-#build_list=./build-adwaita-icon-theme.sh
+build_list="
+	./build-libsoup.sh
+"
 
 libname=
 filename=
