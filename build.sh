@@ -7,7 +7,7 @@ host=i686-w64-mingw32
 
 static_libgcc=-static-libgcc
 
-static_pthread="-Wl,-Bstatic -lpthread -Wl,-Bdynamic"
+static_pthread="-Wl,-dn,-lpthread,-lwinpthread,-dy"
 
 # -m32 or -m64
 bit32_64=-m32
@@ -69,8 +69,11 @@ libsoup_depends="
 "
 
 # for testing
+#build_list="
+#	./build-libsoup.sh
+#"
 build_list="
-	./build-libsoup.sh
+	./build-glib-networking.sh
 "
 
 libname=

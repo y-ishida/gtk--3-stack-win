@@ -6,6 +6,7 @@ configure() {
 	./configure ${configure_flags} \
 		--with-included-libtasn1 \
 		--without-p11-kit \
+		--without-libpthread-prefix \
 		--disable-doc \
 		--disable-tools \
 		--disable-cxx \
