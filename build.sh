@@ -25,7 +25,7 @@ export PKG_CONFIG_LIBDIR
 PKG_CONFIG_LIBDIR=${build_dir}/lib/pkgconfig
 
 export CC
-CC="${host}-gcc ${static_libgcc} ${static_pthread} ${bit32_64}"
+CC="${host}-gcc ${static_libgcc} ${static_pthread} ${bit32_64} -O2"
 
 export CPPFLAGS
 CPPFLAGS="-I${build_dir}/include"
