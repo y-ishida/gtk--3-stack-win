@@ -49,6 +49,7 @@ build() {
 	find demos -name Makefile | \
 		xargs sed -i -e 's/update_icon_cache = .*update-icon-cache/update_icon_cache = gtk-update-icon-cache/'
 
-	make install
+	make install && \
+	glib-compile-schemas ../build/share/glib-2.0/schemas/
 }
 
