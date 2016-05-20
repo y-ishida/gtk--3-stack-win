@@ -1,0 +1,513 @@
+diff -upr /tmp/libsoup-2.54.1/libsoup/soup-connection.c libsoup/soup-connection.c
+--- /tmp/libsoup-2.54.1/libsoup/soup-connection.c	2016-02-06 00:05:33.000000000 +0900
++++ libsoup/soup-connection.c	2016-05-19 12:05:00.620547000 +0900
+@@ -369,6 +369,8 @@ socket_connect_complete (GObject *object
+ 	SoupConnectionPrivate *priv = SOUP_CONNECTION_GET_PRIVATE (conn);
+ 	GError *error = NULL;
+ 
++	P1("enter in socket_connect_complete()");
++
+ 	if (!soup_socket_connect_finish_internal (sock, result, &error)) {
+ 		socket_connect_finished (task, sock, error);
+ 		return;
+@@ -376,6 +378,8 @@ socket_connect_complete (GObject *object
+ 
+ 	priv->proxy_uri = soup_socket_get_http_proxy_uri (sock);
+ 
++	Pn("returned true from soup_socket_connect_finish_internal(): error=0x%p", error);
++
+ 	if (priv->ssl && !priv->proxy_uri) {
+ 		soup_socket_handshake_async (sock, priv->remote_uri->host,
+ 					     g_task_get_cancellable (task),
+@@ -423,6 +427,7 @@ soup_connection_connect_async (SoupConne
+ 	soup_socket_properties_push_async_context (priv->socket_props);
+ 	task = g_task_new (conn, cancellable, callback, user_data);
+ 
++	P1("call soup_socket_connect_async_internal()");
+ 	soup_socket_connect_async_internal (priv->socket, cancellable,
+ 					    socket_connect_complete, task);
+ 	soup_socket_properties_pop_async_context (priv->socket_props);
+diff -upr /tmp/libsoup-2.54.1/libsoup/soup-enum-types.c libsoup/soup-enum-types.c
+--- /tmp/libsoup-2.54.1/libsoup/soup-enum-types.c	2016-04-26 21:36:15.000000000 +0900
++++ libsoup/soup-enum-types.c	2016-05-18 14:58:15.821763000 +0900
+@@ -60,10 +60,7 @@
+ #include "soup-websocket.h" 
+ #include "soup-websocket-connection.h" 
+ #include "soup-xmlrpc.h" 
+-#include "soup-xmlrpc-old.h" 
+-#include "soup-cookie-jar-sqlite.h" 
+-#include "soup-gnome.h" 
+-#include "soup-gnome-features.h"
++#include "soup-xmlrpc-old.h"
+ 
+ GType
+ soup_address_family_get_type (void)
+diff -upr /tmp/libsoup-2.54.1/libsoup/soup-message-io.c libsoup/soup-message-io.c
+--- /tmp/libsoup-2.54.1/libsoup/soup-message-io.c	2016-02-06 00:05:33.000000000 +0900
++++ libsoup/soup-message-io.c	2016-05-19 10:40:47.810248000 +0900
+@@ -90,7 +90,7 @@ typedef struct {
+ 	SoupMessageCompletionFn   completion_cb;
+ 	gpointer                  completion_data;
+ } SoupMessageIOData;
+-	
++
+ static void io_run (SoupMessage *msg, gboolean blocking);
+ 
+ #define RESPONSE_BLOCK_SIZE 8192
+@@ -353,7 +353,7 @@ closed_async (GObject      *source,
+  *      W:DONE     / R:HEADERS        <-  R:DONE     / W:HEADERS
+  *      W:DONE     / R:BODY           <-  R:DONE     / W:BODY
+  *      W:DONE     / R:DONE               R:DONE     / W:DONE
+- *     
++ *
+  * and the "Expect: 100-continue" request/response, with the client
+  * blocking halfway through its request, and then either continuing or
+  * aborting, depending on the server response:
+@@ -1063,6 +1063,7 @@ io_run (SoupMessage *msg, gboolean block
+ 		if (g_error_matches (error, SOUP_HTTP_ERROR, SOUP_STATUS_TRY_AGAIN))
+ 			io->item->state = SOUP_MESSAGE_RESTARTING;
+ 		else if (error->domain == G_TLS_ERROR) {
++			P1("call soup_message_set_status_full() to set SOUP_STATUS_SSL_FAILED");
+ 			soup_message_set_status_full (msg,
+ 						      SOUP_STATUS_SSL_FAILED,
+ 						      error->message);
+@@ -1257,7 +1258,7 @@ soup_message_io_server (SoupMessage *msg
+ 	io_run (msg, FALSE);
+ }
+ 
+-void  
++void
+ soup_message_io_pause (SoupMessage *msg)
+ {
+ 	SoupMessagePrivate *priv = SOUP_MESSAGE_GET_PRIVATE (msg);
+diff -upr /tmp/libsoup-2.54.1/libsoup/soup-message.c libsoup/soup-message.c
+--- /tmp/libsoup-2.54.1/libsoup/soup-message.c	2016-02-19 23:15:46.000000000 +0900
++++ libsoup/soup-message.c	2016-05-19 10:23:43.514652000 +0900
+@@ -915,7 +915,7 @@ soup_message_class_init (SoupMessageClas
+ 	 * The #GTlsCertificate associated with the message
+ 	 *
+ 	 * Since: 2.34
+-	 */	 
++	 */
+ 	g_object_class_install_property (
+ 		object_class, PROP_TLS_CERTIFICATE,
+ 		g_param_spec_object (SOUP_MESSAGE_TLS_CERTIFICATE,
+@@ -937,7 +937,7 @@ soup_message_class_init (SoupMessageClas
+ 	 * The verification errors on #SoupMessage:tls-certificate
+ 	 *
+ 	 * Since: 2.34
+-	 */	 
++	 */
+ 	g_object_class_install_property (
+ 		object_class, PROP_TLS_ERRORS,
+ 		g_param_spec_flags (SOUP_MESSAGE_TLS_ERRORS,
+@@ -968,7 +968,7 @@ soup_message_class_init (SoupMessageClas
+  * soup_message_new:
+  * @method: the HTTP method for the created request
+  * @uri_string: the destination endpoint (as a string)
+- * 
++ *
+  * Creates a new empty #SoupMessage, which will connect to @uri
+  *
+  * Return value: (nullable): the new #SoupMessage (or %NULL if @uri
+@@ -1000,7 +1000,7 @@ soup_message_new (const char *method, co
+  * soup_message_new_from_uri:
+  * @method: the HTTP method for the created request
+  * @uri: the destination endpoint (as a #SoupURI)
+- * 
++ *
+  * Creates a new empty #SoupMessage, which will connect to @uri
+  *
+  * Return value: the new #SoupMessage
+@@ -1022,7 +1022,7 @@ soup_message_new_from_uri (const char *m
+  * @req_body: (allow-none) (array length=req_length) (element-type guint8):
+  *   a data buffer containing the body of the message request.
+  * @req_length: the byte length of @req_body.
+- * 
++ *
+  * Convenience function to set the request body of a #SoupMessage. If
+  * @content_type is %NULL, the request body must be empty as well.
+  */
+@@ -1058,7 +1058,7 @@ soup_message_set_request (SoupMessage
+  * @resp_body: (allow-none) (array length=resp_length) (element-type guint8):
+  *   a data buffer containing the body of the message response.
+  * @resp_length: the byte length of @resp_body.
+- * 
++ *
+  * Convenience function to set the response body of a #SoupMessage. If
+  * @content_type is %NULL, the response body must be empty as well.
+  */
+@@ -1854,9 +1854,9 @@ soup_message_disables_feature (SoupMessa
+  * @msg: a #SoupMessage
+  *
+  * Gets @msg's first-party #SoupURI
+- * 
++ *
+  * Returns: (transfer none): the @msg's first party #SoupURI
+- * 
++ *
+  * Since: 2.30
+  **/
+ SoupURI *
+@@ -1874,7 +1874,7 @@ soup_message_get_first_party (SoupMessag
+  * soup_message_set_first_party:
+  * @msg: a #SoupMessage
+  * @first_party: the #SoupURI for the @msg's first party
+- * 
++ *
+  * Sets @first_party as the main document #SoupURI for @msg. For
+  * details of when and how this is used refer to the documentation for
+  * #SoupCookieJarAcceptPolicy.
+@@ -1910,6 +1910,8 @@ soup_message_set_https_status (SoupMessa
+ 
+ 	sock = conn ? soup_connection_get_socket (conn) : NULL;
+ 	if (sock && soup_socket_is_ssl (sock)) {
++		P1("soup_socket_is_ssl = true");
++
+ 		GTlsCertificate *certificate;
+ 		GTlsCertificateFlags errors;
+ 
+@@ -1917,10 +1919,12 @@ soup_message_set_https_status (SoupMessa
+ 			      SOUP_SOCKET_TLS_CERTIFICATE, &certificate,
+ 			      SOUP_SOCKET_TLS_ERRORS, &errors,
+ 			      NULL);
++		Pn("get sock's property: %s(0x%p), %s(%d)", SOUP_SOCKET_TLS_CERTIFICATE, certificate, SOUP_SOCKET_TLS_ERRORS, errors);
+ 		g_object_set (msg,
+ 			      SOUP_MESSAGE_TLS_CERTIFICATE, certificate,
+ 			      SOUP_MESSAGE_TLS_ERRORS, errors,
+ 			      NULL);
++		Pn("set msg's property: %s(0x%p), %s(%d)", SOUP_MESSAGE_TLS_CERTIFICATE, certificate, SOUP_MESSAGE_TLS_ERRORS, errors);
+ 		if (certificate)
+ 			g_object_unref (certificate);
+ 	} else {
+diff -upr /tmp/libsoup-2.54.1/libsoup/soup-session.c libsoup/soup-session.c
+--- /tmp/libsoup-2.54.1/libsoup/soup-session.c	2016-02-19 23:15:46.000000000 +0900
++++ libsoup/soup-session.c	2016-05-19 11:03:52.976547000 +0900
+@@ -1616,11 +1616,15 @@ status_from_connect_error (SoupMessageQu
+ 		if (!host->ssl_fallback) {
+ 			host->ssl_fallback = TRUE;
+ 			status = SOUP_STATUS_TRY_AGAIN;
+-		} else
++		} else {
++			P0();
+ 			status = SOUP_STATUS_SSL_FAILED;
++		}
+ 		g_mutex_unlock (&priv->conn_lock);
+-	} else if (error->domain == G_TLS_ERROR)
++	} else if (error->domain == G_TLS_ERROR) {
++		P1("error->domain == G_TLS_ERROR");
+ 		status = SOUP_STATUS_SSL_FAILED;
++	}
+ 	else if (error->domain == G_RESOLVER_ERROR)
+ 		status = SOUP_STATUS_CANT_RESOLVE;
+ 	else if (error->domain == G_IO_ERROR) {
+@@ -1661,8 +1665,11 @@ tunnel_complete (SoupMessageQueueItem *t
+ 	soup_message_set_https_status (item->msg, item->conn);
+ 
+ 	item->error = error;
+-	if (!status)
++	if (!status) {
++		P0();
+ 		status = status_from_connect_error (item, error);
++	}
++
+ 	if (!SOUP_STATUS_IS_SUCCESSFUL (status)) {
+ 		soup_connection_disconnect (item->conn);
+ 		soup_session_set_item_connection (session, item, NULL);
+@@ -1766,6 +1773,8 @@ connect_complete (SoupMessageQueueItem *
+ 	SoupSession *session = item->session;
+ 	guint status;
+ 
++	Pn("enter in connect_complete(): error=0x%p", error);
++
+ 	soup_message_set_https_status (item->msg, item->conn);
+ 
+ 	if (!error) {
+@@ -1774,6 +1783,7 @@ connect_complete (SoupMessageQueueItem *
+ 	}
+ 
+ 	item->error = error;
++	P1("call status_from_connect_error()");
+ 	status = status_from_connect_error (item, error);
+ 	soup_connection_disconnect (conn);
+ 	if (item->state == SOUP_MESSAGE_CONNECTING) {
+@@ -1794,6 +1804,7 @@ connect_async_complete (GObject      *ob
+ 	GError *error = NULL;
+ 
+ 	soup_connection_connect_finish (conn, result, &error);
++	Pn("call connect_complete(item:0x%p, conn:0x%p, error:0x%p)", item, conn, error);
+ 	connect_complete (item, conn, error);
+ 
+ 	if (item->state == SOUP_MESSAGE_CONNECTED ||
+@@ -1931,8 +1942,10 @@ get_connection (SoupMessageQueueItem *it
+ 						ignore_connection_limits,
+ 						&my_should_cleanup,
+ 						&is_dedicated_connection);
+-		if (conn || item->async)
++		if (conn || item->async) {
++			Pn("conn = %p, item->async = %d", conn, item->async);
+ 			break;
++		}
+ 
+ 		if (my_should_cleanup) {
+ 			g_mutex_unlock (&priv->conn_lock);
+@@ -1950,6 +1963,7 @@ get_connection (SoupMessageQueueItem *it
+ 	if (!conn) {
+ 		if (should_cleanup)
+ 			*should_cleanup = my_should_cleanup;
++		P1("return FALSE (conn was null)");
+ 		return FALSE;
+ 	}
+ 
+@@ -1959,6 +1973,7 @@ get_connection (SoupMessageQueueItem *it
+ 	if (soup_connection_get_state (item->conn) != SOUP_CONNECTION_NEW) {
+ 		item->state = SOUP_MESSAGE_READY;
+ 		soup_message_set_https_status (item->msg, item->conn);
++		P1("set item->state = SOUP_MESSAGE_READY");
+ 		return TRUE;
+ 	}
+ 
+@@ -1966,6 +1981,7 @@ get_connection (SoupMessageQueueItem *it
+ 
+ 	if (item->async) {
+ 		soup_message_queue_item_ref (item);
++		P1("call soup_connection_connect_async()");
+ 		soup_connection_connect_async (item->conn, item->cancellable,
+ 					       connect_async_complete, item);
+ 		return FALSE;
+@@ -1973,6 +1989,7 @@ get_connection (SoupMessageQueueItem *it
+ 		GError *error = NULL;
+ 
+ 		soup_connection_connect_sync (item->conn, item->cancellable, &error);
++		P0();
+ 		connect_complete (item, conn, error);
+ 
+ 		return TRUE;
+@@ -1993,11 +2010,13 @@ soup_session_process_queue_item (SoupSes
+ 
+ 		switch (item->state) {
+ 		case SOUP_MESSAGE_STARTING:
++			P1("SOUP_MESSAGE_STARTING");
+ 			if (!get_connection (item, should_cleanup))
+ 				return;
+ 			break;
+ 
+ 		case SOUP_MESSAGE_CONNECTED:
++			P1("SOUP_MESSAGE_CONNECTED");
+ 			if (soup_connection_is_tunnelled (item->conn))
+ 				tunnel_connect (item);
+ 			else
+@@ -2005,27 +2024,33 @@ soup_session_process_queue_item (SoupSes
+ 			break;
+ 
+ 		case SOUP_MESSAGE_READY:
++			P1("SOUP_MESSAGE_READY");
+ 			if (item->msg->status_code) {
+ 				if (item->msg->status_code == SOUP_STATUS_TRY_AGAIN) {
+ 					soup_message_cleanup_response (item->msg);
+ 					item->state = SOUP_MESSAGE_STARTING;
+ 				} else
+ 					item->state = SOUP_MESSAGE_FINISHING;
++				Pn("status_code = %d", item->msg->status_code);
+ 				break;
+ 			}
+ 
+ 			item->state = SOUP_MESSAGE_RUNNING;
++			P1("item->state = SOUP_MESSAGE_RUNNING");
+ 
+ 			soup_session_send_queue_item (session, item, message_completed);
+ 
+ 			if (item->new_api) {
+-				if (item->async)
++				if (item->async) {
+ 					async_send_request_running (session, item);
++					P1("call async_send_request_running()");
++				}
+ 				return;
+ 			}
+ 			break;
+ 
+ 		case SOUP_MESSAGE_RUNNING:
++			P1("SOUP_MESSAGE_RUNNING");
+ 			if (item->async)
+ 				return;
+ 
+@@ -2034,15 +2059,18 @@ soup_session_process_queue_item (SoupSes
+ 			break;
+ 
+ 		case SOUP_MESSAGE_CACHED:
++			P1("SOUP_MESSAGE_CACHED");
+ 			/* Will be handled elsewhere */
+ 			return;
+ 
+ 		case SOUP_MESSAGE_RESTARTING:
++			P1("SOUP_MESSAGE_RESTARTING");
+ 			item->state = SOUP_MESSAGE_STARTING;
+ 			soup_message_restarted (item->msg);
+ 			break;
+ 
+ 		case SOUP_MESSAGE_FINISHING:
++			P1("SOUP_MESSAGE_FINISHING");
+ 			item->state = SOUP_MESSAGE_FINISHED;
+ 			soup_message_finished (item->msg);
+ 			if (item->state != SOUP_MESSAGE_FINISHED) {
+@@ -2058,6 +2086,7 @@ soup_session_process_queue_item (SoupSes
+ 			return;
+ 
+ 		default:
++			P1("default");
+ 			/* Nothing to do with this message in any
+ 			 * other state.
+ 			 */
+@@ -2092,6 +2121,8 @@ async_run_queue (SoupSession *session)
+ 		    item->async_context != soup_session_get_async_context (session))
+ 			continue;
+ 
++		P0();
++
+ 		soup_session_process_queue_item (session, item, &should_cleanup, TRUE);
+ 	}
+ 
+@@ -2159,7 +2190,7 @@ soup_session_real_queue_message (SoupSes
+  * @callback: (allow-none) (scope async): a #SoupSessionCallback which will
+  * be called after the message completes or when an unrecoverable error occurs.
+  * @user_data: (allow-none): a pointer passed to @callback.
+- * 
++ *
+  * Queues the message @msg for asynchronously sending the request and
+  * receiving a response in the current thread-default #GMainContext.
+  * If @msg has been processed before, any resources related to the
+@@ -2253,7 +2284,7 @@ soup_session_real_send_message (SoupSess
+  * soup_session_send_message:
+  * @session: a #SoupSession
+  * @msg: the message to send
+- * 
++ *
+  * Synchronously send @msg. This call will not return until the
+  * transfer is finished successfully or there is an unrecoverable
+  * error.
+@@ -4804,7 +4835,7 @@ websocket_connect_async_stop (SoupMessag
+ 
+ 	if (soup_websocket_client_verify_handshake (item->msg, &error)){
+ 		stream = soup_session_steal_connection (item->session, item->msg);
+-		client = soup_websocket_connection_new (stream, 
++		client = soup_websocket_connection_new (stream,
+ 							soup_message_get_uri (item->msg),
+ 							SOUP_WEBSOCKET_CONNECTION_CLIENT,
+ 							soup_message_headers_get_one (msg->request_headers, "Origin"),
+diff -upr /tmp/libsoup-2.54.1/libsoup/soup-socket.c libsoup/soup-socket.c
+--- /tmp/libsoup-2.54.1/libsoup/soup-socket.c	2016-04-26 01:48:23.000000000 +0900
++++ libsoup/soup-socket.c	2016-05-19 16:51:34.744547000 +0900
+@@ -952,6 +952,7 @@ soup_socket_connect_async_internal (Soup
+ 	task = g_task_new (sock, priv->connect_cancel, callback, user_data);
+ 
+ 	client = new_socket_client (sock);
++	P1("call g_socket_client_connect_async()");
+ 	g_socket_client_connect_async (client,
+ 				       G_SOCKET_CONNECTABLE (priv->remote_addr),
+ 				       priv->connect_cancel,
+@@ -1352,11 +1353,15 @@ soup_socket_setup_ssl (SoupSocket    *so
+ 	SoupSocketPrivate *priv = SOUP_SOCKET_GET_PRIVATE (sock);
+ 	GTlsBackend *backend = g_tls_backend_get_default ();
+ 
++	Pn("g_tls_backend_get_default() supports tls : %d", g_tls_backend_supports_tls(backend));
++
+ 	if (G_IS_TLS_CONNECTION (priv->conn))
+ 		return TRUE;
+ 
+-	if (g_cancellable_set_error_if_cancelled (cancellable, error))
++	if (g_cancellable_set_error_if_cancelled (cancellable, error)) {
++		P0();
+ 		return FALSE;
++	}
+ 
+ 	priv->ssl = TRUE;
+ 
+@@ -1365,6 +1370,10 @@ soup_socket_setup_ssl (SoupSocket    *so
+ 		GSocketConnectable *identity;
+ 
+ 		identity = g_network_address_new (ssl_host, 0);
++
++		Pn("g_tls_backend_get_client_connection_type() : %s", g_type_name(
++					g_tls_backend_get_client_connection_type(backend)));
++
+ 		conn = g_initable_new (g_tls_backend_get_client_connection_type (backend),
+ 				       cancellable, error,
+ 				       "base-io-stream", priv->conn,
+@@ -1375,8 +1384,10 @@ soup_socket_setup_ssl (SoupSocket    *so
+ 				       NULL);
+ 		g_object_unref (identity);
+ 
+-		if (!conn)
++		if (!conn) {
++			P0();
+ 			return FALSE;
++		}
+ 
+ 		/* GLib < 2.41 mistakenly doesn't implement this property in the
+ 		 * dummy TLS backend, so we don't include it in the g_initable_new()
+@@ -1404,8 +1415,10 @@ soup_socket_setup_ssl (SoupSocket    *so
+ 				       "use-system-certdb", FALSE,
+ 				       "require-close-notify", FALSE,
+ 				       NULL);
+-		if (!conn)
++		if (!conn) {
++			P0();
+ 			return FALSE;
++		}
+ 
+ 		g_object_unref (priv->conn);
+ 		priv->conn = G_IO_STREAM (conn);
+@@ -1487,15 +1500,22 @@ handshake_async_ready (GObject *source,
+ 	GTask *task = user_data;
+ 	GError *error = NULL;
+ 
++	P0();
++
+ 	if (g_tls_connection_handshake_finish (G_TLS_CONNECTION (source),
+ 					       result, &error)) {
++
++		Pn("g_tls_connection_handshake_finish() = true : error=0x%p", error);
++
+ 		SoupSocket *sock = g_task_get_source_object (task);
+ 		SoupSocketPrivate *priv = SOUP_SOCKET_GET_PRIVATE (sock);
+ 
+ 		soup_socket_event (sock, G_SOCKET_CLIENT_TLS_HANDSHAKED, priv->conn);
+ 		g_task_return_boolean (task, TRUE);
+-	} else
++	} else {
++		Pn("g_tls_connection_handshake_finish() = false: error=0x%p, %s", error, error->message);
+ 		g_task_return_error (task, error);
++	}
+ 	g_object_unref (task);
+ }
+ 
+@@ -1513,11 +1533,14 @@ soup_socket_handshake_async (SoupSocket
+ 	task = g_task_new (sock, cancellable, callback, user_data);
+ 
+ 	if (!soup_socket_setup_ssl (sock, ssl_host, cancellable, &error)) {
++		Pn("soup_socket_setup_ssl() returns false: error=0x%p", error);
+ 		g_task_return_error (task, error);
+ 		g_object_unref (task);
+ 		return;
+ 	}
+ 
++	Pn("soup_socket_setup_ssl() returns true: error=0x%p", error);
++
+ 	soup_socket_event (sock, G_SOCKET_CLIENT_TLS_HANDSHAKING, priv->conn);
+ 
+ 	g_tls_connection_handshake_async (G_TLS_CONNECTION (priv->conn),
+diff -upr /tmp/libsoup-2.54.1/libsoup/soup.h libsoup/soup.h
+--- /tmp/libsoup-2.54.1/libsoup/soup.h	2016-02-06 00:05:33.000000000 +0900
++++ libsoup/soup.h	2016-05-19 09:54:42.077806000 +0900
+@@ -61,6 +61,10 @@ extern "C" {
+ 
+ #undef __SOUP_H_INSIDE__
+ 
++#define P0() printf("%s:%d<%s>\n", __FILE__, __LINE__, __FUNCTION__)
++#define P1(s) printf("%s:%d<%s> %s\n", __FILE__, __LINE__, __FUNCTION__, (s))
++#define Pn(s,...) printf("%s:%d<%s> "s"\n", __FILE__, __LINE__, __FUNCTION__, __VA_ARGS__)
++
+ #ifdef __cplusplus
+ }
+ #endif
