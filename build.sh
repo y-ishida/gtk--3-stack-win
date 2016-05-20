@@ -33,6 +33,17 @@ CPPFLAGS="-I${build_dir}/include"
 export LDFLAGS
 LDFLAGS="-L${build_dir}/lib"
 
+glib_networking_depends="
+	./build-gmp.sh
+	./build-nettle.sh
+	./build-gnutls.sh
+"
+
+libsoup_depends="
+	./build-glib-networking.sh
+	./build-sqlite3.sh
+"
+
 build_list="
 	./build-zlib.sh
 	./build-libffi.sh
@@ -54,27 +65,17 @@ build_list="
 	./build-gtk.sh
 	./build-libsoup.sh
 	./build-gee.sh
-"
-
-
-glib_networking_depends="
-	./build-gmp.sh
-	./build-nettle.sh
-	./build-gnutls.sh
-"
-
-libsoup_depends="
-	./build-glib-networking.sh
-	./build-sqlite3.sh
+	${glib_networking_depends}
+	${libsoup_depends}
+	./build-libsoup.sh
 "
 
 # for testing
 #build_list="
+#	${glib_networking_depends}
+#	${libsoup_depends}
 #	./build-libsoup.sh
 #"
-build_list="
-	./build-glib-networking.sh
-"
 
 libname=
 filename=
