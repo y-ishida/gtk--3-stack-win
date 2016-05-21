@@ -25,7 +25,17 @@ And requires to install following packages at host environment (Linux).
 
 ## Usage
 
-under constructing ...
+Run ``build.sh``, and it starts download and build all packages.
+
+```sh
+> build.sh
+```
+
+The built artifacts are in `build` directory.
+If you want to cross-compile,
+set ``build/pkg-config``  to the ``PKG_CONFIG_PATH`` environment
+for pkg-config can search .pc files for Windows **only**.
+Or if you want to extract DLL for runtime, you should copy the directories at least ``build/bin/*.dll`` and ``build/lib/gio/modules/*.dll``.
 
 
 
