@@ -1,7 +1,7 @@
 # gtk-3-stack-win
 
 This is set of shell scripts to build a Windows dynamic link libraries (DLL) stack of gtk+3 for cross compiling on Linux.
-Builded artifacts are used for cross compiling application that based on gtk+3 and running on a Windows OS.
+Built artifacts are used for cross compiling application that based on gtk+3 and running on a Windows OS.
 
 
 
@@ -35,7 +35,7 @@ under constructing ...
 
 If you want to see a visual dependency relation graph, need to install graphviz.
 
-For exampele if you can use apt (ex; ubuntu) ;
+For example if you can use apt (ex; ubuntu) ;
 
 ```sh
 > sudo apt-get install graphviz
@@ -58,7 +58,7 @@ If you use Ubuntu, you can view the image file by 'eog';
 The gcc's flag '-static-libgcc' is ignored in building a DLL ( or may be a shared library too ),
 even though it set the flag to LDFLAGS.
 
-It seems a long standig bug; https://www.cygwin.com/ml/cygwin/2009-02/msg00231.html
+It seems a long standing bug; https://www.cygwin.com/ml/cygwin/2009-02/msg00231.html
 
 So in these ``build-*.sh`` set the above flag to variable CC at configure options as a workaround of the bug,
 instead of setting into the LDFLAGS.
