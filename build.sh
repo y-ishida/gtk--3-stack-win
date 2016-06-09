@@ -63,7 +63,6 @@ build_list="
 	./build-hicolor-icon-theme.sh
 	./build-adwaita-icon-theme.sh
 	./build-gtk.sh
-	./build-libsoup.sh
 	./build-gee.sh
 	${glib_networking_depends}
 	${libsoup_depends}
