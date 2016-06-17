@@ -37,6 +37,7 @@ glib_networking_depends="
 	./build-gmp.sh
 	./build-nettle.sh
 	./build-gnutls.sh
+	./build-libproxy.sh
 "
 
 libsoup_depends="

@@ -1,0 +1,38 @@
+diff -upr libproxy-0.4.13/libproxy/cmake/devfiles.cmk ../libproxy-0.4.13/libproxy/cmake/devfiles.cmk
+--- libproxy-0.4.13/libproxy/cmake/devfiles.cmk	2016-04-29 02:04:41.000000000 +0900
++++ ../libproxy-0.4.13/libproxy/cmake/devfiles.cmk	2016-06-16 14:32:46.972594334 +0900
+@@ -1,3 +1,3 @@
+-if(NOT WIN32)
++#if(NOT WIN32)
+   # PkgConfig file
+   set (PKGCONFIG_PREFIX ${CMAKE_INSTALL_PREFIX})
+@@ -21,3 +21,3 @@ if(NOT WIN32)
+   configure_file(${CMAKE_SOURCE_DIR}/libproxy/Findlibproxy.cmake.in ${CMAKE_BINARY_DIR}/Findlibproxy.cmake @ONLY)
+   install(FILES ${CMAKE_BINARY_DIR}/Findlibproxy.cmake DESTINATION ${SHARE_INSTALL_DIR}/cmake/Modules)
+-endif()
++#endif()
+diff -upr libproxy-0.4.13/libproxy/modules/config_w32reg.cpp ../libproxy-0.4.13/libproxy/modules/config_w32reg.cpp
+--- libproxy-0.4.13/libproxy/modules/config_w32reg.cpp	2016-04-29 02:04:41.000000000 +0900
++++ ../libproxy-0.4.13/libproxy/modules/config_w32reg.cpp	2016-06-17 09:02:00.484681666 +0900
+@@ -113,21 +113,6 @@ public:
+ 		uint32_t enabled = 0;
+ 		vector<url> response;
+
+-		// WPAD
+-		if (is_enabled(W32REG_OFFSET_WPAD)) {
+-			response.push_back(url("wpad://"));
+-			return response;
+-		}
+-
+-		// PAC
+-		if (is_enabled(W32REG_OFFSET_PAC) &&
+-			get_registry(W32REG_BASEKEY, "AutoConfigURL", &tmp, NULL, NULL) &&
+-			url::is_valid(string("pac+") + tmp)) {
+-			response.push_back(url(string("pac+") + tmp));
+-			delete tmp;
+-			return response;
+-		}
+-
+ 		// Manual proxy
+ 		// Check to see if we are enabled and get the value of ProxyServer
+ 		if (get_registry(W32REG_BASEKEY, "ProxyEnable", NULL, NULL, &enabled) && enabled &&

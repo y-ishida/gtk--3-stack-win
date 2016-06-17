@@ -4,8 +4,10 @@ url=http://ftp.gnome.org/pub/GNOME/sources/glib-networking/2.48/${filename}
 
 configure() {
 	./configure ${configure_flags} \
-		--without-ca-certificates
+		--with-libproxy \
+		--without-gnome-proxy \
+		--with-gnutls \
+		--without-ca-certificates \
+		--without-pkcs11
 }
-
-
 
