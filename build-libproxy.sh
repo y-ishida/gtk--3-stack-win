@@ -54,5 +54,6 @@ build() {
 	make VERBOSE=1
 	make install
 	mv ${build_dir}/lib/libproxy.dll ${build_dir}/bin/
+	mv ${build_dir}/lib/liblibproxy.dll.a ${build_dir}/lib/libproxy.dll.a
 }
 
