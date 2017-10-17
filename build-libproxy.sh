@@ -5,7 +5,7 @@ url=https://github.com/libproxy/libproxy/archive/0.4.13.tar.gz
 configure() {
 	# Enables installing the .pc file for pkg-config and
 	# disables WPAD and PAC.
-	patch -Np1 < ../libproxy-0.4.13.patch
+	patch -Np1 < ../libproxy-0.4.13.patch || true
 
 	if [ -e install ]; then
 		rm -r install
