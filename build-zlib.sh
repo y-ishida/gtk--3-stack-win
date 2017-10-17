@@ -1,6 +1,6 @@
-libname=zlib-1.2.8
+libname=zlib-1.2.11
 filename=${libname}.tar.gz
-url=http://zlib.net/${filename}
+url=http://zlib.net/fossils/${filename}
 
 configure() {
 	:
